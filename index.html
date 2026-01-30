@@ -1,0 +1,521 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GreenNode (Liquid Tree) — проект по биологии</title>
+  <meta name="description" content="GreenNode (Liquid Tree) — искусственное «дерево» на основе микроводорослей для очистки воздуха: поглощение CO₂ и выделение O₂." />
+  <style>
+    :root{
+      --bg:#0b1220;
+      --panel:#121b33;
+      --text:#eef1ff;
+      --muted:#aeb7d9;
+      --accent:#7c5cff;
+      --accent2:#2ee59d;
+      --border: rgba(255,255,255,.10);
+      --shadow: 0 18px 60px rgba(0,0,0,.45);
+      --radius: 18px;
+      --maxw: 980px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial;
+      color:var(--text);
+      background:
+        radial-gradient(1000px 650px at 15% 15%, rgba(124,92,255,.22), transparent 60%),
+        radial-gradient(900px 600px at 85% 85%, rgba(46,229,157,.18), transparent 55%),
+        var(--bg);
+    }
+    a{color:inherit}
+    .wrap{width:min(var(--maxw), 100%); margin:0 auto; padding:22px 18px 46px}
+
+    /* top bar */
+    .topbar{
+      display:flex; align-items:center; justify-content:space-between; gap:14px;
+      border:1px solid var(--border);
+      background: rgba(0,0,0,.18);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      padding: 12px 14px;
+      box-shadow: var(--shadow);
+      position: sticky; top: 14px; z-index: 10;
+    }
+    .logo{display:flex; align-items:center; gap:10px; min-width: 220px}
+    .dot{
+      width:12px; height:12px; border-radius:999px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      box-shadow: 0 0 22px rgba(124,92,255,.45);
+    }
+    .logo b{font-weight:900}
+    .logo span{color:var(--muted); font-size:13px}
+    .nav{display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end}
+    .nav a{
+      text-decoration:none;
+      border:1px solid var(--border);
+      padding:8px 10px;
+      border-radius: 12px;
+      font-size: 13px;
+      color: var(--muted);
+      transition: .15s;
+    }
+    .nav a:hover{color:var(--text); border-color: rgba(124,92,255,.45)}
+    .cta{border:1px solid rgba(124,92,255,.55); background: rgba(124,92,255,.15); color: var(--text)!important}
+
+    /* hero */
+    .hero{
+      margin-top: 18px;
+      border:1px solid var(--border);
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      padding: 22px;
+    }
+    .heroGrid{display:grid; grid-template-columns: 1.25fr .75fr; gap:18px; align-items:start}
+    @media (max-width: 900px){ .heroGrid{grid-template-columns:1fr} .logo{min-width:auto} }
+
+    .kicker{color:var(--muted); font-size:14px}
+    h1{margin:8px 0 10px; font-size: clamp(26px, 3.2vw, 40px); line-height:1.1}
+    h2{margin:0 0 8px; font-size: 20px}
+    .lead{margin:0; color:var(--muted); font-size:16px; line-height:1.6; max-width: 70ch}
+    .badges{display:flex; flex-wrap:wrap; gap:8px; margin-top: 14px}
+    .badge{
+      border:1px solid var(--border);
+      border-radius: 999px;
+      padding: 7px 10px;
+      font-size: 13px;
+      color: var(--muted);
+      background: rgba(0,0,0,.12);
+    }
+
+    .sideCard{
+      border:1px solid var(--border);
+      border-radius: 16px;
+      background: rgba(0,0,0,.14);
+      padding: 14px;
+    }
+    .sideCard h3{margin:0 0 8px; font-size: 13px; color: var(--muted); font-weight: 800; text-transform: uppercase; letter-spacing: .8px}
+    .metric{display:grid; grid-template-columns: 1fr; gap:10px}
+    .metric .row{
+      display:flex; align-items:baseline; justify-content:space-between;
+      border:1px dashed rgba(255,255,255,.12);
+      border-radius: 12px;
+      padding: 10px 10px;
+    }
+    .metric b{font-size:14px}
+    .metric span{color:var(--muted); font-size:13px}
+
+    /* tabs */
+    .tabs{
+      margin-top: 16px;
+      border:1px solid var(--border);
+      border-radius: var(--radius);
+      background: rgba(0,0,0,.14);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .tabButtons{
+      display:flex; gap:8px; flex-wrap:wrap;
+      padding: 12px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(0,0,0,.12);
+    }
+    button.tab{
+      border:1px solid var(--border);
+      background: rgba(255,255,255,.03);
+      color: var(--muted);
+      padding: 10px 12px;
+      border-radius: 14px;
+      cursor:pointer;
+      font-size: 14px;
+      transition: .15s;
+    }
+    button.tab:hover{color:var(--text); border-color: rgba(124,92,255,.35)}
+    button.tab[aria-selected="true"]{
+      color: var(--text);
+      border-color: rgba(124,92,255,.65);
+      background: rgba(124,92,255,.14);
+    }
+    .tabPanel{
+      padding: 18px 18px 22px;
+      display:none;
+      animation: fade .18s ease-out;
+    }
+    .tabPanel.active{display:block}
+    @keyframes fade { from{opacity:.5; transform: translateY(2px)} to{opacity:1; transform: translateY(0)} }
+
+    .grid2{display:grid; grid-template-columns: 1fr 1fr; gap:14px}
+    @media (max-width: 820px){ .grid2{grid-template-columns:1fr} }
+
+    .card{
+      border:1px solid var(--border);
+      border-radius: 16px;
+      background: rgba(255,255,255,.03);
+      padding: 14px;
+    }
+    .card h4{margin:0 0 8px; font-size: 16px}
+    .card p{margin:0; color:var(--muted); line-height:1.6}
+    ul{margin: 10px 0 0 18px; color: var(--muted); line-height:1.7}
+
+    .callout{
+      margin-top: 12px;
+      border:1px solid rgba(46,229,157,.25);
+      background: rgba(46,229,157,.06);
+      border-radius: 16px;
+      padding: 12px 14px;
+      color: var(--muted);
+      line-height:1.6;
+    }
+    .callout b{color: var(--text)}
+    .warn{
+      border-color: rgba(255,180,70,.28);
+      background: rgba(255,180,70,.06);
+    }
+
+    footer{margin-top:18px; color:var(--muted); font-size:13px; text-align:center; opacity:.9}
+    .small{font-size:12px; color: rgba(174,183,217,.9)}
+    .pill{
+      display:inline-block;
+      padding: 5px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(0,0,0,.10);
+      color: var(--muted);
+      font-size: 12px;
+      margin-right: 8px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="topbar" id="top">
+      <div class="logo">
+        <div class="dot"></div>
+        <div>
+          <b>GreenNode</b><br />
+          <span>Liquid Tree • проект по биологии</span>
+        </div>
+      </div>
+
+      <nav class="nav" aria-label="Навигация">
+        <a href="#top">Главная</a>
+        <a href="#tabs">Разделы</a>
+        <a class="cta" href="#team">Команда</a>
+      </nav>
+    </div>
+
+    <section class="hero">
+      <div class="heroGrid">
+        <div>
+          <div class="kicker">Школьный проект • искусственное «дерево» для города</div>
+          <h1>GreenNode (Liquid Tree) — система на микроводорослях, которая помогает очищать воздух</h1>
+          <p class="lead">
+            С каждым годом в городах становится всё меньше мест, где можно посадить дерево.
+            Выращивание деревьев требует времени и финансов.
+            Наш ответ — <b>GreenNode</b> (или <b>Liquid Tree</b>): экологически безопасное искусственное «дерево»,
+            которое производит кислород с помощью органических компонентов.
+          </p>
+
+          <div class="badges">
+            <span class="badge">🌿 микроводоросли</span>
+            <span class="badge">♻️ поглощение CO₂</span>
+            <span class="badge">💨 выделение O₂</span>
+            <span class="badge">🏙️ для парков и улиц</span>
+          </div>
+
+          <div class="callout">
+            <b>Рекомендация:</b> адаптация и модернизация городской биосистемы очистки воздуха на основе микроводорослей
+            для условий Казахстана.
+          </div>
+        </div>
+
+        <aside class="sideCard" aria-label="Кратко">
+          <h3>Коротко</h3>
+          <div class="metric">
+            <div class="row"><b>Цель</b><span>безопасное “дерево”</span></div>
+            <div class="row"><b>Механизм</b><span>фотосинтез</span></div>
+            <div class="row"><b>Где</b><span>улицы / парки</span></div>
+            <div class="row"><b>Плюс</b><span>работает сразу</span></div>
+          </div>
+          <p class="small" style="margin:10px 0 0;">
+            Можно добавлять датчики, экран, солнечные панели и QR-код.
+          </p>
+        </aside>
+      </div>
+    </section>
+
+    <section class="tabs" id="tabs">
+      <div class="tabButtons" role="tablist" aria-label="Разделы проекта">
+        <button class="tab" role="tab" aria-selected="true" data-tab="goal">Цель</button>
+        <button class="tab" role="tab" aria-selected="false" data-tab="algae">Микроводоросли</button>
+        <button class="tab" role="tab" aria-selected="false" data-tab="work">Как работает</button>
+        <button class="tab" role="tab" aria-selected="false" data-tab="winter">Зима в РК</button>
+        <button class="tab" role="tab" aria-selected="false" data-tab="benefits">Преимущества</button>
+        <button class="tab" role="tab" aria-selected="false" data-tab="practice">Практика</button>
+        <button class="tab" role="tab" aria-selected="false" data-tab="upgrade">Модернизация</button>
+        <button class="tab" role="tab" aria-selected="false" data-tab="kz">Почему Казахстан</button>
+        <button class="tab" role="tab" aria-selected="false" data-tab="problems">Проблемы</button>
+      </div>
+
+      <!-- ЦЕЛЬ -->
+      <div class="tabPanel active" id="goal" role="tabpanel">
+        <div class="grid2">
+          <div class="card">
+            <h4>Цель проекта</h4>
+            <p>
+              Создание экологически безопасного искусственного «дерева», способного производить кислород
+              аналогично настоящим деревьям, с помощью органических компонентов.
+            </p>
+          </div>
+          <div class="card">
+            <h4>Дополнительно</h4>
+            <p>
+              Изучить эффективность систем очистки воздуха и возможности адаптации решения под городскую среду.
+            </p>
+          </div>
+        </div>
+        <div class="callout">
+          <span class="pill">GreenNode</span>
+          <span class="pill">Liquid Tree</span>
+          Это один проект: искусственное “дерево”, которое помогает очищать воздух в городе.
+        </div>
+      </div>
+
+      <!-- МИКРОВОДОРОСЛИ -->
+      <div class="tabPanel" id="algae" role="tabpanel">
+        <div class="grid2">
+          <div class="card">
+            <h4>Что такое микроводоросли?</h4>
+            <p>
+              Микроводоросли — это крошечные водные организмы, способные к фотосинтезу.
+              Они поглощают углекислый газ и выделяют кислород.
+            </p>
+            <ul>
+              <li>Примеры: <b>хлорелла</b> и <b>спирулина</b></li>
+              <li>Растут быстрее, чем наземные растения</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4>Почему это мощно</h4>
+            <ul>
+              <li><b>Производят в 10 раз больше кислорода</b> на квадратный метр</li>
+              <li><b>1 км²</b> активной культуры микроводорослей может выделять примерно <b>10–20 тонн O₂ в год</b></li>
+            </ul>
+            <div class="callout">
+              Идея: использовать эту эффективность в компактном городском модуле.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- КАК РАБОТАЕТ -->
+      <div class="tabPanel" id="work" role="tabpanel">
+        <div class="grid2">
+          <div class="card">
+            <h4>Система работы</h4>
+            <p>
+              С помощью фотосинтеза микроводоросли преобразуют углекислый газ из воздуха в кислород,
+              который выходит наружу из установки.
+            </p>
+          </div>
+          <div class="card">
+            <h4>Замкнутая и автономная система</h4>
+            <p>
+              Вода с микроводорослями постоянно циркулирует и освещается солнечным светом (или лампами).
+              Система работает без почвы, корней и сложного ухода, очищая воздух непрерывно.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ЗИМА -->
+      <div class="tabPanel" id="winter" role="tabpanel">
+        <div class="card">
+          <h4>Работа в зимних условиях Казахстана</h4>
+          <p>
+            Зимой низкая температура и короткий световой день могут снижать активность микроводорослей.
+            При температуре ниже <b>+10°C</b> скорость фотосинтеза и роста хлореллы и спирулины уменьшается,
+            поэтому эффективность очистки воздуха падает по сравнению с тёплым сезоном.
+          </p>
+          <div class="callout warn">
+            <b>Что нужно для стабильной работы зимой:</b>
+            <ul>
+              <li>энергосберегающее <b>LED-освещение</b> при недостатке солнца</li>
+              <li><b>теплоизоляционный корпус</b> резервуара</li>
+              <li>размещение в местах с меньшим воздействием мороза (закрытые остановки/помещения)</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- ПРЕИМУЩЕСТВА -->
+      <div class="tabPanel" id="benefits" role="tabpanel">
+        <div class="grid2">
+          <div class="card">
+            <h4>Почему это эффективно?</h4>
+            <ul>
+              <li>В оптимальных условиях производит <b>больше кислорода</b>, чем обычные деревья</li>
+              <li>Установка <b>дешевле</b> и её можно разместить где угодно</li>
+              <li>Микроводоросли начинают работать <b>почти сразу</b>, не требуя десятилетий для роста</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4>Дополнительные преимущества</h4>
+            <p>
+              «Жидкое дерево» может быть элементом городской инфраструктуры: скамейка, освещение,
+              зарядка устройств и даже точка Wi-Fi. Устройство вписывается в современные городские пространства.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ПРАКТИКА -->
+      <div class="tabPanel" id="practice" role="tabpanel">
+        <div class="grid2">
+          <div class="card">
+            <h4>Реализация на практике</h4>
+            <p>
+              Пример устройства <b>Liquid 3</b> показывает, что идея уже работает и применяется в некоторых странах.
+              Оно очищает воздух, как <b>20-летнее дерево</b>, но занимает меньше места.
+            </p>
+          </div>
+          <div class="card">
+            <h4>Где можно ставить</h4>
+            <ul>
+              <li>парки и скверы</li>
+              <li>площади</li>
+              <li>автобусные остановки</li>
+              <li>возле школ и университетов</li>
+            </ul>
+            <div class="callout">
+              Это решение для плотной городской застройки, где нет места для новых парков и деревьев.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- МОДЕРНИЗАЦИЯ -->
+      <div class="tabPanel" id="upgrade" role="tabpanel">
+        <div class="grid2">
+          <div class="card">
+            <h4>Модернизация (1–2)</h4>
+            <ul>
+              <li><b>Солнечные панели</b> — чтобы модуль работал полностью на солнечной энергии</li>
+              <li><b>Датчики воздуха + экран</b> — CO₂, уровень загрязнения, сколько очищено за день</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4>Модернизация (3–4)</h4>
+            <ul>
+              <li><b>Модульная система</b> — соединять несколько «жидких деревьев» в одну сеть для больших площадей</li>
+              <li><b>Образовательная функция</b> — QR-код: как работают микроводоросли и почему важен чистый воздух</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- ПОЧЕМУ КАЗАХСТАН -->
+      <div class="tabPanel" id="kz" role="tabpanel">
+        <div class="grid2">
+          <div class="card">
+            <h4>1) Борьба с загрязнением воздуха</h4>
+            <p>
+              В крупных городах Казахстана (например, Алматы, Нур-Султан, Караганда) часто высокая концентрация пыли,
+              выхлопных газов и CO₂ из-за транспорта, отопления и промышленности. Модули могут снижать вредные вещества
+              прямо там, где люди живут и работают.
+            </p>
+          </div>
+          <div class="card">
+            <h4>2) Климат и солнце</h4>
+            <p>
+              Казахстан — большая сухая страна с большим количеством солнечных дней.
+              Микроводоросли работают лучше при хорошем освещении, поэтому система может быть продуктивной большую часть года.
+            </p>
+          </div>
+          <div class="card">
+            <h4>3) Не требуется много места</h4>
+            <p>
+              В плотных городских центрах нет пространства для новых парков. Установки можно размещать точечно:
+              на остановках, площадях, возле учебных заведений.
+            </p>
+          </div>
+          <div class="card">
+            <h4>4) Образовательная и социальная ценность</h4>
+            <p>
+              Такие системы можно использовать в школах (эко-проекты, уроки биологии) и в университетах для опытов.
+              Жители и ученики могут наблюдать эффект в реальном времени.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ПРОБЛЕМЫ -->
+      <div class="tabPanel" id="problems" role="tabpanel">
+        <div class="card">
+          <h4>Проблемы и ограничения</h4>
+          <ul>
+            <li>поддержание условий (pH, температура)</li>
+            <li>замена воды и водорослей (части биомассы)</li>
+            <li>не все водоросли подходят для условий Казахстана</li>
+            <li>при загрязнении резервуара система может выйти из строя</li>
+            <li>нужен технический персонал для обслуживания и мониторинга</li>
+            <li>без регулярного обслуживания система теряет эффективность или останавливается</li>
+          </ul>
+          <div class="callout warn">
+            Честность тут — плюс на защите: вы сразу показываете, что понимаете риски и что проект реалистичный.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="hero" id="team" style="margin-top:16px;">
+      <h2>Команда</h2>
+      <p class="lead" style="max-width:none">
+        Автор(ы): <b>[Имя ученика 1]</b>, <b>[Имя ученика 2]</b><br/>
+        Класс: <b>9</b> • Школа: <b>[Название школы]</b> • Город: <b>[Город]</b><br/>
+        Руководитель проекта: <b>[ФИО]</b> (если надо)
+      </p>
+      <p class="small" style="margin-top:10px;">
+        © <span id="year"></span> • GreenNode / Liquid Tree
+      </p>
+    </section>
+
+    <footer>
+      Спасибо за внимание!
+    </footer>
+  </div>
+
+  <script>
+    // Tabs
+    const tabs = Array.from(document.querySelectorAll('button.tab'));
+    const panels = new Map(Array.from(document.querySelectorAll('.tabPanel')).map(p => [p.id, p]));
+
+    function setTab(id){
+      tabs.forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === id)));
+      panels.forEach((p, key) => p.classList.toggle('active', key === id));
+      history.replaceState(null, "", "#" + id);
+    }
+
+    tabs.forEach(btn => btn.addEventListener('click', () => setTab(btn.dataset.tab)));
+
+    // Deep-link: if URL has #kz, #winter, etc.
+    const hash = (location.hash || "").replace("#", "");
+    if (hash && panels.has(hash)) setTab(hash);
+
+    // Keyboard nav
+    document.addEventListener('keydown', (e) => {
+      if (!['ArrowLeft','ArrowRight'].includes(e.key)) return;
+      const current = tabs.findIndex(b => b.getAttribute('aria-selected') === 'true');
+      const next = e.key === 'ArrowRight' ? current + 1 : current - 1;
+      const idx = (next + tabs.length) % tabs.length;
+      tabs[idx].click();
+    });
+
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
